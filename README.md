@@ -15,6 +15,7 @@ This is a consequence of the intended purpose of allowing advanced CPU hardware 
 This is sadly nothing we can solve as it is outside of our financial capabilities to create a cut down custom kernel driver implementing only the CPU sensor capabilities.
 
 **If you are a corporate/business user or IT administrator on a corporate device, do not under any circumstances install this driver!**
+
 For regular end-users, whether this is a concern to you or not is ultimately up to you. To exploit it, malicious code needs to be executed locally and go undetected by the Anti-Virus suite, and at that point most malware can already easily performed similar local privilege escalations through alrernate methods, such as through e.g. a simple [UAC auto-elevation bypass](https://devblogs.microsoft.com/oldnewthing/20160816-00/?p=94105).
 
 ## Command line arguments
