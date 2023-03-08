@@ -33,6 +33,43 @@ SK_IsAdmin (void)
 }
 
 
+// Suppress warnings about _vsnwprintf
+#pragma warning(disable:4996)
+std::wstring
+__cdecl
+SK_FormatStringW (wchar_t const* const _Format, ...)
+{
+  size_t len = 0;
+
+  va_list   _ArgList;
+  va_start (_ArgList, _Format);
+  {
+    len =
+      _vsnwprintf ( nullptr, 0, _Format, _ArgList ) + 1ui64;
+  }
+  va_end   (_ArgList);
+
+  size_t alloc_size =
+    sizeof (wchar_t) * (len + 2);
+
+  std::unique_ptr <wchar_t []> pData =
+    std::make_unique <wchar_t []> (alloc_size);
+
+  if (! pData)
+    return std::wstring ();
+
+  va_start (_ArgList, _Format);
+  {
+    len =
+      _vsnwprintf ( (wchar_t *)pData.get (), len + 1, _Format, _ArgList );
+  }
+  va_end   (_ArgList);
+
+  return
+    pData.get ();
+}
+
+
 BOOL
 FileExists (LPCTSTR szPath)
 {
@@ -40,6 +77,16 @@ FileExists (LPCTSTR szPath)
 
   return  (dwAttrib != INVALID_FILE_ATTRIBUTES &&
          !(dwAttrib  & FILE_ATTRIBUTE_DIRECTORY));
+}
+
+
+void
+ResetWorkingDirectory (void)
+{
+  wchar_t path[MAX_PATH];
+  GetModuleFileNameW   (nullptr, path, MAX_PATH);
+  PathRemoveFileSpecW  (path);
+  SetCurrentDirectoryW (path);
 }
 
 
@@ -56,19 +103,9 @@ SKIF_Util_GetLastError (void)
 
   message.erase (std::remove (message.begin(), message.end(), '\n'), message.end());
 
-  message = L" [" + std::to_wstring(GetLastError()) + L"] " + message;
+  message = L"[" + std::to_wstring (GetLastError()) + L"] " + message;
 
   return message;
-}
-
-
-void
-ResetWorkingDirectory (void)
-{
-  wchar_t path[MAX_PATH];
-  GetModuleFileNameW   (nullptr, path, MAX_PATH);
-  PathRemoveFileSpecW  (path);
-  SetCurrentDirectoryW (path);
 }
 
 
@@ -89,6 +126,6 @@ ShowErrorMessage (DWORD lastError, std::wstring preMsg = L"", std::wstring winTi
   if (! preMsg.empty())
     preMsg += L"\n\n";
 
-  MessageBox (NULL, (preMsg + L"[" +std::to_wstring(lastError) + L"] " + message).c_str(),
+  MessageBox (NULL, (preMsg + L"[" + std::to_wstring (lastError) + L"] " + message).c_str(),
                      winTitle.c_str(), MB_OK | MB_ICONERROR);
 }

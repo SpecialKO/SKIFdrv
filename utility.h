@@ -1,10 +1,7 @@
 #pragma once
 
 #include "SKIFdrv.h"
-#include <wtypes.h>
-#include <wininet.h>
 #include <atlbase.h>
-#include <Tlhelp32.h>
 
 class SK_AutoHandle : public CHandle
 {
@@ -28,6 +25,7 @@ public:
 };
 
 bool SK_IsAdmin (void);
+std::wstring __cdecl SK_FormatStringW (wchar_t const* const _Format, ...);
 BOOL FileExists (LPCTSTR szPath);
 void ResetWorkingDirectory (void);
 std::wstring SKIF_Util_GetLastError (void);

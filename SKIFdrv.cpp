@@ -17,9 +17,12 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   // We assume everything is in the same folder as the executable
   ResetWorkingDirectory ( );
 
+  wchar_t wszCurrentPath[MAX_PATH + 2] = { };
+  GetCurrentDirectory   (MAX_PATH, wszCurrentPath);
+
   // Paths
-  std::filesystem::path log = std::filesystem::path (std::filesystem::current_path().wstring() + LR"(\SKIFdrv.log)");
-  std::filesystem::path drv = std::filesystem::path (std::filesystem::current_path().wstring() + LR"(\WinRing0x64.sys)");
+  std::wstring log = SK_FormatStringW (LR"(%ws\%ws)", wszCurrentPath, LR"(SKIFdrv.log)"    );
+  std::wstring drv = SK_FormatStringW (LR"(%ws\%ws)", wszCurrentPath, LR"(WinRing0x64.sys)");
 
   // Logging
   DeleteFile (log.c_str());
@@ -29,8 +32,8 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   PLOG_INFO << "SKIF Driver Manager (SKIFdrv) v 1.0";
   PLOG_INFO << "Built " __TIME__ ", " __DATE__;
   PLOG_INFO << SKIF_LOG_SEPARATOR;
-  PLOG_INFO << "Working directory : " << std::filesystem::current_path();
-  PLOG_INFO << "Driver location   : " << drv.wstring();
+  PLOG_INFO << "Working directory : " << wszCurrentPath;
+  PLOG_INFO << "Driver location   : " << drv;
   PLOG_INFO << "Supported cmd arg : ";
   PLOG_INFO << "    Install - Installs the kernel driver on the system.";
   PLOG_INFO << "  Uninstall - Uninstalls the kernel driver from the system.";
@@ -38,7 +41,7 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   
   if (SK_IsAdmin())
   {
-    if (FileExists (drv.wstring().c_str()))
+    if (FileExists (drv.c_str()))
     {
       PLOG_INFO << "Detected kernel driver at the assumed location.";
 
@@ -47,11 +50,12 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
       {
         PLOG_INFO << "Detected 'Uninstall' cmd line argument.";
         
-        if (SvcStop() &&
-            SvcUninstall())
+        if (SvcStop      ( ) &&
+            SvcUninstall ( ))
         {
           PLOG_INFO << "Driver has been marked for deletion!";
           PLOG_INFO << "It will be uninstalled once all open handles to it have been closed.";
+          SetLastError (NO_ERROR);
         }
       }
 
@@ -60,11 +64,15 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
       {
         PLOG_INFO << "Detected 'Install' cmd line argument.";
         
-        if (SvcInstall (drv.wstring ( )) &&
-            SvcStart   ( )               &&
-            DevOpen    ( ))
+        if (SvcInstall (drv) &&
+            SvcStart   (   ) &&
+            DevOpen    (   ))
+        {
           PLOG_INFO << "Driver has been successfully installed!";
+          SetLastError (NO_ERROR);
+        }
       }
+
       // No cmd line recognized
       else
       {
@@ -98,8 +106,8 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   }
   
   PLOG_INFO << SKIF_LOG_SEPARATOR;
-  PLOG_INFO << "And that's a wrap, folks! The process is done and hopefully everything went as expected.";
-  PLOG_INFO << "Thank you for using this application, and have a wonderful day!";
+  PLOG_INFO << "Process is finished! Now shutting down...";
+  PLOG_INFO << SKIF_Util_GetLastError ( );
 
-  return 0;
+  return GetLastError ( );
 }

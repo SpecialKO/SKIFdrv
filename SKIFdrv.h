@@ -2,10 +2,6 @@
 
 #include "resource.h"
 
-#include <Windows.h>
-#include <string>
-#include <filesystem>
-
 #ifndef PLOG_ENABLE_WCHAR_INPUT
 #define PLOG_ENABLE_WCHAR_INPUT 1
 #endif
