@@ -1,5 +1,6 @@
 #include "utility.h"
 
+
 bool
 SK_IsAdmin (void)
 {
@@ -35,11 +36,12 @@ SK_IsAdmin (void)
 BOOL
 FileExists (LPCTSTR szPath)
 {
-  DWORD dwAttrib = GetFileAttributes (szPath);
+  DWORD    dwAttrib  = GetFileAttributes (szPath);
 
   return  (dwAttrib != INVALID_FILE_ATTRIBUTES &&
          !(dwAttrib  & FILE_ATTRIBUTE_DIRECTORY));
 }
+
 
 std::wstring
 SKIF_Util_GetLastError (void)
@@ -59,6 +61,7 @@ SKIF_Util_GetLastError (void)
   return message;
 }
 
+
 void
 ResetWorkingDirectory (void)
 {
@@ -68,16 +71,20 @@ ResetWorkingDirectory (void)
   SetCurrentDirectoryW (path);
 }
 
+
 // Might not be necessary
-void ShowErrorMessage (DWORD lastError, PCWSTR wszDllPath)
+void ShowErrorMessage (DWORD lastError)
 {
-  wchar_t wsLastError[256];
+  LPWSTR messageBuffer = nullptr;
 
-  FormatMessageW (
-    FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-    NULL, lastError, MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
-    wsLastError, (sizeof (wsLastError) / sizeof (wchar_t)), NULL
-  );
+  size_t size = FormatMessageW (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                NULL, lastError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, NULL);
 
-  MessageBox (NULL, (L"There was a problem starting " + std::wstring(wszDllPath) + L"\n\n" + wsLastError).c_str(), L"SKIFdrv", MB_OK | MB_ICONERROR);
+  std::wstring message (messageBuffer, size);
+  LocalFree (messageBuffer);
+
+  message.erase (std::remove (message.begin(), message.end(), '\n'), message.end());
+
+  MessageBox (NULL, (L"Unexpected error occurred:\n\n[" +std::to_wstring(GetLastError()) + L"] " + message).c_str(),
+                     L"SKIFdrv", MB_OK | MB_ICONERROR);
 }

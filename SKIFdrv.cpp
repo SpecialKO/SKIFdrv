@@ -22,8 +22,7 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   std::filesystem::path drv = std::filesystem::path (std::filesystem::current_path().wstring() + LR"(\WinRing0x64.sys)");
 
   // Logging
-  if (std::filesystem::exists(log))
-    DeleteFile (log.c_str());
+  DeleteFile (log.c_str());
 
   plog::init (plog::debug, log.c_str(), 10000000, 1);
 
@@ -39,7 +38,7 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   
   if (SK_IsAdmin())
   {
-    if (std::filesystem::exists (drv))
+    if (FileExists (drv.wstring().c_str()))
     {
       PLOG_INFO << "Detected kernel driver at the assumed location.";
 
