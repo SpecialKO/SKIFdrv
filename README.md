@@ -1,11 +1,14 @@
 # SKIFdrv
-<<<<<<< HEAD
-SKIF Driver Manager (SKIFdrv)
 =======
 
-Service hosts for SKIF to hold 32-bit and 64-bit global injection service.
+Management tool for facilitating driver service installation and uninstallation.
 
-Can be launched directly and will locate and use `SpecialK[32|64].dll` files automatically provided they either exist in the working directory or its parent folder.
+## Command line arguments
 
-Used by SKIF to hold the global injection service in an easy-to-locate process.
->>>>>>> 491f29d (Initial commit)
+`Install` - Performs an install of the driver and service.
+`Uninstall` - Performs an uninstall of the driver and service.
+
+## Notes
+
+The NT Device name is hardcoded as `\\.\WinRing0_1_2_0` and might conflict with other driver services as a result as only one can be running simultaneously using the same NT Device name.
+This should technically not be an issue because different apps can still interface with it.
