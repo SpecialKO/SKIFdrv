@@ -8,7 +8,7 @@ The tool will eventually also support uninstalling the legacy driver service `Wi
 
 ## Security concerns
 
-The kernel driver in question exposes the system to [CVE-2020-14979](https://nvd.nist.gov/vuln/detail/CVE-2020-14979) ([details](https://posts.specterops.io/cve-2020-14979-local-privilege-escalation-in-evga-precisionx1-cf63c6b95896)), a Local Privilege Escalation vulnerability that can be exploited by malicious third-party code running locally to elevate their privileges to an administrator.
+The kernel driver in question exposes the system to [CVE-2020-14979](https://nvd.nist.gov/vuln/detail/CVE-2020-14979) ([details](https://posts.specterops.io/cve-2020-14979-local-privilege-escalation-in-evga-precisionx1-cf63c6b95896)), a Local Privilege Escalation vulnerability that can be exploited by malicious third-party code running locally to elevate their privileges to that of a local administrator.
 
 This is a consequence of the intended purpose of allowing advanced CPU hardware monitoring capabilities in regular games that typically run unelevated (not as an admin), and our reliance of the common `WinRing0_1_2_0` kernel driver. While Special K's custom user-mode driver is cut-down significantly and only implements the relevant CPU sensor code, the kernel driver itself includes more advanced hardware capabilities beyond this, and third-party apps/tools that make use of their own user-mode driver can also make use of those capabilities as a result.
 
