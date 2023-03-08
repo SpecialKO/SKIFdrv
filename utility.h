@@ -29,3 +29,4 @@ std::wstring __cdecl SK_FormatStringW (wchar_t const* const _Format, ...);
 BOOL FileExists (LPCTSTR szPath);
 void ResetWorkingDirectory (void);
 std::wstring SKIF_Util_GetLastError (void);
+void ShowErrorMessage (DWORD lastError, std::wstring preMsg = L"", std::wstring winTitle = L"");

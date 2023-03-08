@@ -109,9 +109,8 @@ SKIF_Util_GetLastError (void)
 }
 
 
-// Currently unused
 void
-ShowErrorMessage (DWORD lastError, std::wstring preMsg = L"", std::wstring winTitle = L"")
+ShowErrorMessage (DWORD lastError, std::wstring preMsg, std::wstring winTitle)
 {
   LPWSTR messageBuffer = nullptr;
 

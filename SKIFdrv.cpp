@@ -109,5 +109,8 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   PLOG_INFO << "Process is finished! Now shutting down...";
   PLOG_INFO << SKIF_Util_GetLastError ( );
 
+  if (NO_ERROR != GetLastError ( ))
+    ShowErrorMessage (GetLastError ( ), L"An unexpected error occurred. Please consult the SKIFdrv.log for more information.", L"SKIFdrv");
+
   return GetLastError ( );
 }
