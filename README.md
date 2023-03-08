@@ -31,3 +31,7 @@ For regular end-users, whether this is a concern to you or not is ultimately up 
 
 The NT Device name is hardcoded as `\\.\WinRing0_1_2_0` and might conflict with other driver services as a result as only one can be running simultaneously using the same NT Device name.
 This should technically not be an issue because different apps can still interface with it.
+
+## Third-party code
+
+* Uses [PLOG](https://github.com/SergiusTheBest/plog), licensed under [MIT](https://github.com/SergiusTheBest/plog/blob/master/LICENSE).
