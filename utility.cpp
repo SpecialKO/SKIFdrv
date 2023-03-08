@@ -72,8 +72,9 @@ ResetWorkingDirectory (void)
 }
 
 
-// Might not be necessary
-void ShowErrorMessage (DWORD lastError)
+// Currently unused
+void
+ShowErrorMessage (DWORD lastError, std::wstring preMsg = L"", std::wstring winTitle = L"")
 {
   LPWSTR messageBuffer = nullptr;
 
@@ -85,6 +86,9 @@ void ShowErrorMessage (DWORD lastError)
 
   message.erase (std::remove (message.begin(), message.end(), '\n'), message.end());
 
-  MessageBox (NULL, (L"Unexpected error occurred:\n\n[" +std::to_wstring(GetLastError()) + L"] " + message).c_str(),
-                     L"SKIFdrv", MB_OK | MB_ICONERROR);
+  if (! preMsg.empty())
+    preMsg += L"\n\n";
+
+  MessageBox (NULL, (preMsg + L"[" +std::to_wstring(lastError) + L"] " + message).c_str(),
+                     winTitle.c_str(), MB_OK | MB_ICONERROR);
 }
