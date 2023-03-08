@@ -2,7 +2,7 @@
 
 Management tool for facilitating driver service (un)installation.
 
-Special K can make use of the quite common `WinRing0x64.sys` kernel driver to enable advanced CPU hardware monitoring capabilities in its CPU widget. This tool allows end-users to easily install and uninstall the driver and the necessary components, and is redistributed as a separate installer from the main Special K/SKIF package. The tool creates a driver service on the system called `SK_WinRing0` that autostarts the driver alongside the system boot, as this is required to allow unelevated games to make use of it.
+Special K can make use of the quite common `WinRing0x64.sys` kernel driver to enable advanced CPU hardware monitoring capabilities in its CPU widget. This tool allows end-users to easily install and uninstall the driver and the necessary components, and is redistributed as a separate installer from the main Special K/SKIF package. The tool creates a driver service on the system called `SK_WinRing0` that autostarts the driver alongside the system boot as this is required to allow unelevated games to make use of it.
 
 The tool will eventually also support uninstalling the legacy driver service `WinRing0_1_2_0` to allow users to migrate over.
 
