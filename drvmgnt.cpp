@@ -17,7 +17,7 @@ bool SvcInstall (std::wstring fullpath)
     OpenSCManager (
       nullptr,                  // localhost
       nullptr,                  // ServicesActive database
-      SC_MANAGER_CREATE_SERVICE // Might be that we need STANDARD_RIGHTS_READ as well?
+      SC_MANAGER_CREATE_SERVICE // Desired Access
     );
 
   if (nullptr != schSCManager)
@@ -133,7 +133,7 @@ bool SvcStart (void)
     OpenSCManager (
       nullptr,                  // localhost
       nullptr,                  // ServicesActive database
-      SC_MANAGER_CREATE_SERVICE // Desired Access
+      GENERIC_READ              // Desired Access
     );
 
   if (nullptr != schSCManager)
