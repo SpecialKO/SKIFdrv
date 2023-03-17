@@ -1,12 +1,8 @@
 #include "drvmgnt.h"
 #include "utility.h"
 
-#define SK_ServiceName L"SK_WinRing0"
-#define SK_DeviceName  L"\\.\\\\WinRing0_1_2_0"
-
-
 // Install the driver service
-bool SvcInstall (std::wstring fullpath)
+bool SvcInstall (std::wstring svcName, std::wstring fullPath)
 {
   bool ret = false;
 
@@ -25,13 +21,13 @@ bool SvcInstall (std::wstring fullpath)
     schSCWinRing0 =
       CreateService (
         schSCManager,
-        SK_ServiceName,         // Service Name
-        SK_ServiceName,         // Display Name
+        svcName.c_str(),        // Service Name
+        svcName.c_str(),        // Display Name
         SERVICE_ALL_ACCESS,     // Desired Access
         SERVICE_KERNEL_DRIVER,  // Service Type
         SERVICE_SYSTEM_START,   // Start Method
         SERVICE_ERROR_NORMAL,   // Error Control
-        fullpath.c_str(),       // Fully qualified path
+        fullPath.c_str(),       // Fully qualified path
         NULL,                   // Load Order Group (none)
         NULL,                   // Tag ID (none)
         NULL,                   // Dependencies (none)
@@ -41,17 +37,17 @@ bool SvcInstall (std::wstring fullpath)
 
     if (nullptr != schSCWinRing0)
     {
-      PLOG_INFO << "Driver service " SK_ServiceName " was successfully installed.";
+      PLOG_INFO << "Driver service " << svcName << " was successfully installed.";
       CloseServiceHandle (schSCWinRing0);
       ret = true;
     }
     else if (ERROR_SERVICE_EXISTS == GetLastError ( ))
     {
-      PLOG_WARNING << "Driver service " SK_ServiceName " already exists.";
+      PLOG_WARNING << "Driver service " << svcName << " already exists.";
       ret = true;
     }
     else
-      PLOG_ERROR << "Could not create the " SK_ServiceName " driver service: " << SKIF_Util_GetLastError ( );
+      PLOG_ERROR << "Could not create the " << svcName << " driver service: " << SKIF_Util_GetLastError ( );
 
     CloseServiceHandle (schSCManager);
   } else
@@ -62,7 +58,7 @@ bool SvcInstall (std::wstring fullpath)
 
 
 // Uninstall the driver service
-bool SvcUninstall (void)
+bool SvcUninstall (std::wstring svcName)
 {
   bool ret = false;
 
@@ -81,7 +77,7 @@ bool SvcUninstall (void)
     schSCWinRing0 =
       OpenService (
         schSCManager,
-        SK_ServiceName,         // Service Name
+        svcName.c_str(),        // Service Name
         DELETE                  // Desired Access
       );
 
@@ -89,29 +85,29 @@ bool SvcUninstall (void)
     {
       if (DeleteService (schSCWinRing0))
       {
-        PLOG_INFO << "Driver service " SK_ServiceName " was marked for deletion.";
+        PLOG_INFO << "Driver service " << svcName << " was marked for deletion.";
         ret = true;
       }
       else if (ERROR_SERVICE_MARKED_FOR_DELETE == GetLastError ( ))
       {
-        PLOG_INFO << "Driver service " SK_ServiceName " have already been marked for deletion.";
+        PLOG_INFO << "Driver service " << svcName << " have already been marked for deletion.";
         ret = true;
       }
       else
-        PLOG_ERROR << "Could not uninstall the " SK_ServiceName " driver service: " << SKIF_Util_GetLastError ( );
+        PLOG_ERROR << "Could not uninstall the " << svcName << " driver service: " << SKIF_Util_GetLastError ( );
 
       CloseServiceHandle (schSCWinRing0);
     }
     else if (ERROR_SERVICE_DOES_NOT_EXIST == GetLastError ( ))
     {
-      PLOG_INFO << "Driver service " SK_ServiceName " have already been deleted.";
+      PLOG_INFO << "Driver service " << svcName << " have already been deleted.";
       // It is technically not "correct" to return true here when the
       //   service does not exist, but in our case we do so since the
       //     whole point of stopping the service is to uninstall it.
       ret = true;
     }
     else
-      PLOG_ERROR << "Could not open the " SK_ServiceName " driver service: " << SKIF_Util_GetLastError ( );
+      PLOG_ERROR << "Could not open the " << svcName << " driver service: " << SKIF_Util_GetLastError ( );
 
     CloseServiceHandle (schSCManager);
   } else
@@ -122,7 +118,7 @@ bool SvcUninstall (void)
 
 
 // Start the driver service
-bool SvcStart (void)
+bool SvcStart (std::wstring svcName)
 {
   bool ret = false;
 
@@ -141,7 +137,7 @@ bool SvcStart (void)
     schSCWinRing0 =
       OpenService (
         schSCManager,
-        SK_ServiceName,         // Service Name
+        svcName.c_str(),        // Service Name
         SERVICE_START           // Desired Access
       );
 
@@ -149,12 +145,12 @@ bool SvcStart (void)
     {
       if (StartService (schSCWinRing0, 0, nullptr))
       {
-        PLOG_INFO << "Driver service " SK_ServiceName " was successfully started.";
+        PLOG_INFO << "Driver service " << svcName << " was successfully started.";
         ret = true;
       }
       else if (ERROR_SERVICE_ALREADY_RUNNING == GetLastError ( ))
       {
-        PLOG_INFO << "Driver service " SK_ServiceName " was already running.";
+        PLOG_INFO << "Driver service " << svcName << " was already running.";
         ret = true;
       }
       else if (ERROR_ALREADY_EXISTS == GetLastError ( ))
@@ -162,18 +158,18 @@ bool SvcStart (void)
         // It is technically not "correct" to return true here when we could not
         //   start up the service because the NT device already exist, but in our
         //     case we do so since it should resolve itself after a system restart.
-        PLOG_WARNING << "Could not start the " SK_ServiceName " driver service because the NT device " SK_DeviceName " already exists.";
+        PLOG_WARNING << "Could not start the " << svcName << " driver service because the NT device already exists.";
         PLOG_WARNING << "This is typically an indication of another service already running that relies on the same driver.";
         PLOG_WARNING << "The system might need to be restarted before Special K's service can be started properly.";
         ret = true;
       }
       else
-        PLOG_ERROR << "Could not start the " SK_ServiceName " driver service: " << SKIF_Util_GetLastError ( );
+        PLOG_ERROR << "Could not start the " << svcName << " driver service: " << SKIF_Util_GetLastError ( );
 
       CloseServiceHandle (schSCWinRing0);
     }
     else
-      PLOG_ERROR << "Could not open the " SK_ServiceName " driver service: " << SKIF_Util_GetLastError ( );
+      PLOG_ERROR << "Could not open the " << svcName << " driver service: " << SKIF_Util_GetLastError ( );
 
     CloseServiceHandle (schSCManager);
   } else
@@ -184,7 +180,7 @@ bool SvcStart (void)
 
 
 // Stop the driver service
-bool SvcStop (void)
+bool SvcStop (std::wstring svcName)
 {
   bool ret = false;
 
@@ -203,7 +199,7 @@ bool SvcStop (void)
     schSCWinRing0 =
       OpenService (
         schSCManager,
-        SK_ServiceName,         // Service Name
+        svcName.c_str(),        // Service Name
         SERVICE_STOP            // Desired Access
       );
 
@@ -213,29 +209,29 @@ bool SvcStop (void)
 
       if (ControlService (schSCWinRing0, SERVICE_CONTROL_STOP, &status))
       {
-        PLOG_INFO << "Driver service " SK_ServiceName " was signaled to stop.";
+        PLOG_INFO << "Driver service " << svcName << " was signaled to stop.";
         ret = true;
       }
       else if (ERROR_SERVICE_NOT_ACTIVE == GetLastError ( ))
       {
-        PLOG_INFO << "Driver service " SK_ServiceName " is already stopped.";
+        PLOG_INFO << "Driver service " << svcName << " is already stopped.";
         ret = true;
       }
       else
-        PLOG_ERROR << "Could not stop the " SK_ServiceName " driver service: " << SKIF_Util_GetLastError ( );
+        PLOG_ERROR << "Could not stop the " << svcName << " driver service: " << SKIF_Util_GetLastError ( );
 
       CloseServiceHandle (schSCWinRing0);
     }
     else if (ERROR_SERVICE_DOES_NOT_EXIST == GetLastError ( ))
     {
-      PLOG_INFO << "Driver service " SK_ServiceName " have already been deleted.";
+      PLOG_INFO << "Driver service " << svcName << " have already been deleted.";
       // It is technically not "correct" to return true here when the
       //   service does not exist, but in our case we do so since the
       //     whole point of stopping the service is to uninstall it.
       ret = true;
     }
     else
-      PLOG_ERROR << "Could not open the " SK_ServiceName " driver service: " << SKIF_Util_GetLastError ( );
+      PLOG_ERROR << "Could not open the " << svcName << " driver service: " << SKIF_Util_GetLastError ( );
 
     CloseServiceHandle (schSCManager);
   } else
@@ -246,12 +242,12 @@ bool SvcStop (void)
 
 
 // Open the device to ensure the driver was installed properly
-bool DevOpen (void)
+bool DevOpen (std::wstring devName)
 {
   bool ret = false;
 
   HANDLE h = CreateFile (
-    LR"(\\.\WinRing0_1_2_0)",     // DeviceName / FileName
+    devName.c_str(),              // DeviceName / FileName
     GENERIC_READ | GENERIC_WRITE, // Desired Access
     0,
     NULL,
@@ -262,11 +258,11 @@ bool DevOpen (void)
 
   if (INVALID_HANDLE_VALUE == h)
   {
-    PLOG_WARNING << "Could not open the " SK_DeviceName " NT device: " << SKIF_Util_GetLastError();
+    PLOG_WARNING << "Could not open the " << devName << " NT device: " << SKIF_Util_GetLastError();
   }
   else
   {
-    PLOG_INFO << "NT device " SK_DeviceName " was succesfully opened.";
+    PLOG_INFO << "NT device " << devName << " was succesfully opened.";
     ret = true;
     CloseHandle (h);
   }

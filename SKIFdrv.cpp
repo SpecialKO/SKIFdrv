@@ -5,6 +5,11 @@
 #include "utility.h"
 #include "drvmgnt.h"
 
+#define SK_SvcName    LR"(SK_WinRing0)"
+#define SK_SvcNameOld LR"(WinRing0_1_2_0)"
+#define SK_DevName    LR"(\\.\WinRing0_1_2_0)"
+
+
 int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
                       _In_opt_ HINSTANCE hPrevInstance,
                       _In_     LPWSTR    lpCmdLine,
@@ -39,19 +44,33 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   PLOG_INFO << "  Uninstall - Uninstalls the kernel driver from the system.";
   PLOG_INFO << SKIF_LOG_SEPARATOR;
   
-  if (SK_IsAdmin())
+  if (SK_IsAdmin ( ))
   {
+    // Migrate (aka uninstall obsolete driver)
+    if (StrStrIW (lpCmdLine, L"Migrate") != NULL)
+    {
+      PLOG_INFO << "Detected 'Migrate' cmd line argument.";
+        
+      if (SvcStop      (SK_SvcNameOld) &&
+          SvcUninstall (SK_SvcNameOld))
+      {
+        PLOG_INFO << "Obsolete driver has been marked for deletion!";
+        PLOG_INFO << "It will be uninstalled once all open handles to it have been closed.";
+        SetLastError (NO_ERROR);
+      }
+    }
+
     if (FileExists (drv.c_str()))
     {
       PLOG_INFO << "Detected kernel driver at the assumed location.";
 
       // Uninstall
-      if (StrStrIW(lpCmdLine, L"Uninstall") != NULL)
+      if (StrStrIW (lpCmdLine, L"Uninstall") != NULL)
       {
         PLOG_INFO << "Detected 'Uninstall' cmd line argument.";
         
-        if (SvcStop      ( ) &&
-            SvcUninstall ( ))
+        if (SvcStop      (SK_SvcName) &&
+            SvcUninstall (SK_SvcName))
         {
           PLOG_INFO << "Driver has been marked for deletion!";
           PLOG_INFO << "It will be uninstalled once all open handles to it have been closed.";
@@ -64,17 +83,17 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
       {
         PLOG_INFO << "Detected 'Install' cmd line argument.";
         
-        if (SvcInstall (drv) &&
-            SvcStart   (   ) &&
-            DevOpen    (   ))
+        if (SvcInstall (SK_SvcName, drv) &&
+            SvcStart   (SK_SvcName) &&
+            DevOpen    (SK_DevName))
         {
           PLOG_INFO << "Driver has been successfully installed!";
           SetLastError (NO_ERROR);
         }
       }
 
-      // No cmd line recognized
-      else
+      // No cmd line recognized (only show if Migrate was not used)
+      else if (StrStrIW (lpCmdLine, L"Migrate") == NULL)
       {
         PLOG_ERROR << "No cmd line argument was recognized!";
         MessageBox (NULL,
@@ -89,7 +108,10 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
       }
     }
     else
+    {
       PLOG_ERROR << "Kernel driver was not detected at the assumed location!";
+      SetLastError (ERROR_FILE_NOT_FOUND);
+    }
   }
   else
   {
