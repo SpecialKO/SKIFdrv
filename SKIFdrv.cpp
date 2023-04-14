@@ -42,7 +42,11 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   PLOG_INFO << "Supported cmd arg : ";
   PLOG_INFO << "    Install - Installs the kernel driver on the system.";
   PLOG_INFO << "  Uninstall - Uninstalls the kernel driver from the system.";
+  PLOG_INFO << "    Migrate - Uninstalls the obsolete kernel driver from the system.";
+  PLOG_INFO << "     Silent - Executes silently with no popups.";
   PLOG_INFO << SKIF_LOG_SEPARATOR;
+
+  bool bSilentRun = (StrStrIW (lpCmdLine, L"Silent") != NULL);
   
   if (SK_IsAdmin ( ))
   {
@@ -96,15 +100,16 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
       else if (StrStrIW (lpCmdLine, L"Migrate") == NULL)
       {
         PLOG_ERROR << "No cmd line argument was recognized!";
-        MessageBox (NULL,
-                    L"No cmd line argument was recognized!\n"
-                    L"\n"
-                    L"Supported arguments:\n"
-                    L"Install - Installs the kernel driver on the system.\n"
-                    L"Uninstall - Uninstalls the kernel driver from the system.",
-                    L"SKIFdrv",
-                    MB_OK | MB_ICONERROR
-        );
+        if (! bSilentRun)
+          MessageBox (NULL,
+                      L"No cmd line argument was recognized!\n"
+                      L"\n"
+                      L"Supported arguments:\n"
+                      L"Install - Installs the kernel driver on the system.\n"
+                      L"Uninstall - Uninstalls the kernel driver from the system.",
+                      L"SKIFdrv",
+                      MB_OK | MB_ICONERROR
+          );
       }
     }
     else
@@ -131,7 +136,7 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
   PLOG_INFO << "Process is finished! Now shutting down...";
   PLOG_INFO << SKIF_Util_GetLastError ( );
 
-  if (NO_ERROR != GetLastError ( ))
+  if (NO_ERROR != GetLastError ( ) && ! bSilentRun)
     ShowErrorMessage (GetLastError ( ), L"An unexpected error occurred. Please consult the SKIFdrv.log for more information.", L"SKIFdrv");
 
   return GetLastError ( );
